@@ -70,6 +70,8 @@ ModelImporter:
     100124: Plane_002
     100126: Cube_027_MeshPart0
     100128: Cube_027_MeshPart1
+    100130: Icosphere_001
+    100132: Plane
     400000: Circle
     400002: Cube
     400004: Cube_001
@@ -135,6 +137,8 @@ ModelImporter:
     400124: Plane_002
     400126: Cube_027_MeshPart0
     400128: Cube_027_MeshPart1
+    400130: Icosphere_001
+    400132: Plane
     2300000: Circle
     2300002: Cube
     2300004: Cube_001
@@ -199,6 +203,8 @@ ModelImporter:
     2300122: Plane_002
     2300124: Cube_027_MeshPart0
     2300126: Cube_027_MeshPart1
+    2300128: Icosphere_001
+    2300130: Plane
     3300000: Circle
     3300002: Cube
     3300004: Cube_001
@@ -263,6 +269,8 @@ ModelImporter:
     3300122: Plane_002
     3300124: Cube_027_MeshPart0
     3300126: Cube_027_MeshPart1
+    3300128: Icosphere_001
+    3300130: Plane
     4300000: Cube_052
     4300002: Cube_051
     4300004: Cube_050
@@ -327,6 +335,8 @@ ModelImporter:
     4300122: Cube
     4300124: Cube_027_MeshPart0
     4300126: Cube_027_MeshPart1
+    4300128: Plane
+    4300130: Icosphere_001
     7400000: Default Take
     9500000: //RootNode
   materials:
@@ -375,6 +385,7 @@ ModelImporter:
   importAnimation: 1
   copyAvatar: 0
   humanDescription:
+    serializedVersion: 2
     human: []
     skeleton: []
     armTwist: 0.5
@@ -385,7 +396,10 @@ ModelImporter:
     legStretch: 0.05
     feetSpacing: 0
     rootMotionBoneName: 
+    rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
     hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 0
   lastHumanDescriptionAvatarSource: {instanceID: 0}
   animationType: 2
   humanoidOversampling: 1
