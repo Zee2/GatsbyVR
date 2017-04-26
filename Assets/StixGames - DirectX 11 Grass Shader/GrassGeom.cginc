@@ -1,4 +1,4 @@
-﻿// Upgrade NOTE: replaced '_World2Object' with 'unity_WorldToObject'
+// Upgrade NOTE: replaced '_World2Object' with 'unity_WorldToObject'
 
 #ifndef GRASS_GEOM
 #define GRASS_GEOM
@@ -15,9 +15,9 @@ inline FS_INPUT geomToFrag(GS_OUTPUT v)
 	#endif
 
 	#ifdef UNITY_COMPILER_HLSL
-	FS_INPUT o = (FS_INPUT) 0;
+		FS_INPUT o = (FS_INPUT) 0;
 	#else
-	FS_INPUT o;
+		FS_INPUT o;
 	#endif
 
 	o.worldPos = worldPos;
@@ -25,10 +25,18 @@ inline FS_INPUT geomToFrag(GS_OUTPUT v)
 	#if !defined(SIMPLE_GRASS) && !defined(SIMPLE_GRASS_DENSITY)
 		o.uv = v.uv;
 		o.texIndex = v.texIndex;
+
+		#ifdef GRASS_TEXTURE_ATLAS
+			o.textureAtlasIndex = v.textureAtlasIndex;
+		#endif
 	#endif
 
 	#ifndef SHADOWPASS
-		o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+		#if UNITY_VERSION < 540
+			o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+		#else
+			o.pos = UnityObjectToClipPos(v.vertex);
+		#endif
 
 		o.color = v.color;
 
@@ -37,7 +45,6 @@ inline FS_INPUT geomToFrag(GS_OUTPUT v)
 
 		o.lightDir = v.lightDir;
 		o.viewDir =  v.viewDir;
-
 		
 		TRANSFER_SHADOW(o); // pass shadow coordinates to pixel shader
 		UNITY_TRANSFER_FOG(o, o.pos); // pass fog coordinates to pixel shader
@@ -60,11 +67,11 @@ void geom (point GS_INPUT p[1], inout TriangleStream<FS_INPUT> triStream)
 	fixed4 uv = fixed4(p[0].uv, 0, 0);
 
 	//This variable is used for calculating random values. If you have a better name for it, I'm all ears!
-#ifdef GRASS_OBJECT_MODE
-	float3 randCalcPos = p[0].objectSpacePos;
-#else
-	float3 randCalcPos = oPos;
-#endif
+	#ifdef GRASS_OBJECT_MODE
+		float3 randCalcPos = p[0].objectSpacePos;
+	#else
+		float3 randCalcPos = oPos;
+	#endif
 
 	//Define LightDir
 	#ifndef USING_DIRECTIONAL_LIGHT
@@ -85,15 +92,18 @@ void geom (point GS_INPUT p[1], inout TriangleStream<FS_INPUT> triStream)
 	fixed3 orientationDir = viewDir;
 
 	//Grass variable declaration
-	fixed maxHeight;
-	fixed minHeight;
-	fixed width;
-	fixed softness;
+	fixed maxHeight = 0;
+	fixed minHeight = 0;
+	fixed width = 0;
+	fixed softness = 0;
 	#ifndef SHADOWPASS
-		fixed4 mainColor;
-		fixed4 secColor;
+		fixed4 mainColor = fixed4(0, 0, 0, 0);
+		fixed4 secColor = fixed4(0, 0, 0, 0);
 	#endif
-	
+	#ifdef GRASS_TEXTURE_ATLAS
+		int textureAtlasIndex = 0;
+	#endif
+
 	#if !defined(SIMPLE_GRASS) && !defined(UNIFORM_DENSITY)
 		#ifdef VERTEX_DENSITY
 			//Vertex density
@@ -119,6 +129,7 @@ void geom (point GS_INPUT p[1], inout TriangleStream<FS_INPUT> triStream)
 				mainColor = _Color00;
 				secColor = _SecColor00;
 			#endif
+
 		#if !defined(SIMPLE_GRASS)
 		}
 		else
@@ -145,8 +156,12 @@ void geom (point GS_INPUT p[1], inout TriangleStream<FS_INPUT> triStream)
 		#else
 			float randVal = rand(randCalcPos.xz + float2(1789, -2360));
 		#endif
-		int texIndex;
+		int texIndex = 0;
 		
+		#ifdef GRASS_TEXTURE_ATLAS
+			float textureAtlasRandVal = rand(randCalcPos.xz + float2(-2346, 1246));
+		#endif
+
 		if(randVal < DENSITY00)
 		{
 			texIndex = 0;
@@ -157,6 +172,9 @@ void geom (point GS_INPUT p[1], inout TriangleStream<FS_INPUT> triStream)
 			#ifndef SHADOWPASS
 				mainColor = _Color00;
 				secColor = _SecColor00;
+			#endif
+			#ifdef GRASS_TEXTURE_ATLAS
+				textureAtlasIndex = (int)(textureAtlasRandVal * _TextureAtlasWidth00 * _TextureAtlasHeight00);
 			#endif
 		}
 		#if !defined(ONE_GRASS_TYPE)
@@ -171,6 +189,9 @@ void geom (point GS_INPUT p[1], inout TriangleStream<FS_INPUT> triStream)
 				mainColor = _Color01;
 				secColor = _SecColor01;
 			#endif
+			#ifdef GRASS_TEXTURE_ATLAS
+				textureAtlasIndex = (int)(textureAtlasRandVal * _TextureAtlasWidth01 * _TextureAtlasHeight01);
+			#endif
 		}
 		#if !defined(TWO_GRASS_TYPES)
 		else if(randVal < (DENSITY00 + DENSITY01 + DENSITY02))
@@ -184,6 +205,9 @@ void geom (point GS_INPUT p[1], inout TriangleStream<FS_INPUT> triStream)
 				mainColor = _Color02;
 				secColor = _SecColor02;
 			#endif
+			#ifdef GRASS_TEXTURE_ATLAS
+				textureAtlasIndex = (int)(textureAtlasRandVal * _TextureAtlasWidth02 * _TextureAtlasHeight02);
+			#endif
 		}
 		#if !defined(THREE_GRASS_TYPES)
 		else if(randVal < (DENSITY00 + DENSITY01 + DENSITY02 + DENSITY03))
@@ -196,6 +220,9 @@ void geom (point GS_INPUT p[1], inout TriangleStream<FS_INPUT> triStream)
 			#ifndef SHADOWPASS
 				mainColor = _Color03;
 				secColor = _SecColor03;
+			#endif
+			#ifdef GRASS_TEXTURE_ATLAS
+				textureAtlasIndex = (int)(textureAtlasRandVal * _TextureAtlasWidth03 * _TextureAtlasHeight03);
 			#endif
 		}
 		#endif
@@ -223,7 +250,7 @@ void geom (point GS_INPUT p[1], inout TriangleStream<FS_INPUT> triStream)
 	
 	//If grass is looked at from the top, it should still look like grass
 	#ifdef GRASS_TOP_VIEW_COMPENSATION
-		fixed topViewCompensation = 1 + pow(dot(viewDir, up), 20) * 0.8;
+		fixed topViewCompensation = 1 + pow(max(0, dot(viewDir, up)), 20) * 0.8;
 		width *= topViewCompensation;
 		
 		fixed2 windDir = wind(randCalcPos, fixed2(randX, randZ) * (topViewCompensation));
@@ -231,18 +258,32 @@ void geom (point GS_INPUT p[1], inout TriangleStream<FS_INPUT> triStream)
 		fixed2 windDir = wind(randCalcPos, fixed2(randX, randZ));
 	#endif
 
-	//Grass height modifier
+	//Grass height from color map
 	fixed4 tex = tex2Dlod(_ColorMap, uv);
 
+	//Grass height from distance falloff
 	fixed dist = distance(oPos, _WorldSpaceCameraPos);
+
+	if (dist > _GrassFadeEnd)
+	{
+		#ifdef UNITY_COMPILER_HLSL
+			GS_OUTPUT pIn = (GS_OUTPUT)0;
+		#else
+			GS_OUTPUT pIn;
+		#endif
+
+		triStream.Append(geomToFrag(pIn));
+		return;
+	}
+
 	fixed grassHeightMod = tex.a * smoothstep(_GrassFadeEnd, _GrassFadeStart, dist);
 	
-	//Smooth height
+	//Tessellation smoothing by height
 	#ifdef GRASS_HEIGHT_SMOOTHING
 		grassHeightMod *= p[0].smoothing;
 	#endif
 
-	//Smooth width
+	//Tessellation smoothing by width
 	#ifdef GRASS_WIDTH_SMOOTHING
 		width *= p[0].smoothing;
 	#endif
@@ -259,13 +300,16 @@ void geom (point GS_INPUT p[1], inout TriangleStream<FS_INPUT> triStream)
 	fixed lod = (int)p[0].lod;
 	fixed invLod = 1.0f/lod;
 
+	//Width is split up by offset to right and to left, so we only need half
+	width *= 0.5;
+
 	GS_OUTPUT pIn;
-	float3 lastLeftPos = oPos;
+	float3 lastPos = oPos;
 
 	fixed3 groundRight = normalize(cross(up, orientationDir));
 
 	//Define first vertices most values only have to be defined on the first vertex and will be used for the others as well
-	pIn.vertex = float4(lastLeftPos,1);
+	pIn.vertex = float4(lastPos - width * groundRight,1);
 	getNormals(up, lightDir, groundRight, /*out*/ pIn.normal, /*out*/ pIn.reflectionNormal);
 
 	#if !defined(SIMPLE_GRASS) && !defined(SIMPLE_GRASS_DENSITY)
@@ -279,6 +323,11 @@ void geom (point GS_INPUT p[1], inout TriangleStream<FS_INPUT> triStream)
 		pIn.lightDir = lightDir;
 		pIn.viewDir = viewDir;
 	#endif
+
+	#ifdef GRASS_TEXTURE_ATLAS
+		pIn.textureAtlasIndex = textureAtlasIndex;
+	#endif
+
 	triStream.Append(geomToFrag(pIn));
 
 	pIn.vertex =  float4((oPos + width * groundRight).xyz, 1);
@@ -311,7 +360,7 @@ void geom (point GS_INPUT p[1], inout TriangleStream<FS_INPUT> triStream)
 
 	realHeight *= burnFactor;
 	//width *= burnFactor;
-	
+
 	fixed stiffnessFactor = realHeight * softness;
 
 	for(fixed i = 1; i <= lod; i++)
@@ -339,10 +388,15 @@ void geom (point GS_INPUT p[1], inout TriangleStream<FS_INPUT> triStream)
 		#endif
 		viewDir = normalize(rendererPos - pos);
 
-		fixed3 localUp = pos - lastLeftPos;
+		fixed3 localUp = pos - lastPos;
 
 		//Vertex definition
-		pIn.vertex =  float4(pos, 1);
+		#if defined(SIMPLE_GRASS) || defined(SIMPLE_GRASS_DENSITY)
+			//Simple grass has no texture, so the mesh has to look like a blade of grass
+			pIn.vertex =  float4((pos - width * groundRight * (1 - sqrSegment)).xyz, 1);
+		#else
+			pIn.vertex =  float4((pos - width * groundRight).xyz, 1);
+		#endif
 		getNormals(localUp, lightDir, groundRight, /*out*/ pIn.normal, /*out*/ pIn.reflectionNormal);
 
 		#if !defined(SIMPLE_GRASS) && !defined(SIMPLE_GRASS_DENSITY)
@@ -375,7 +429,7 @@ void geom (point GS_INPUT p[1], inout TriangleStream<FS_INPUT> triStream)
 		
 		triStream.Append(geomToFrag(pIn));
 
-		lastLeftPos = pos;
+		lastPos = pos;
 	}
 				
 	triStream.RestartStrip();

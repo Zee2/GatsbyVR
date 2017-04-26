@@ -1,8 +1,8 @@
-﻿ Shader "Stix Games/Grass" 
+Shader "Stix Games/Grass" 
  {
     Properties 
 	{
-		_EdgeLength ("Density Falloff", Range(3,50)) = 8
+		_EdgeLength ("Density Falloff", Range(0.5,50)) = 8
 
 		_MaxTessellation("Max Density", Range(1, 6)) = 6
 
@@ -15,14 +15,13 @@
 
 		_Disorder("Disorder", float) = 0.3
 
-		_ColorMap("Color Texture (RGB), Height(A)", 2D) = "white" {}
-
-		_Displacement("Displacement Texture (RG)", 2D) = "bump" {}
-
 		_GrassBottomColor("Grass Bottom Color", Color) = (0.35, 0.35, 0.35, 1)
-
 		_BurnColor("Burn Color", Color) = (1,1,1,1)
 
+		_TextureCutoff("Texture Cutoff", Range(0, 1)) = 0.1
+
+		_ColorMap("Color Texture (RGB), Height(A)", 2D) = "white" {}
+		_Displacement("Displacement Texture (RG)", 2D) = "bump" {}
 		_Density("Grass Density 1(R) 2(G) 3(B) 4(A)", 2D) = "red" {}
 		_DensityValues("Grass Density Values", Vector) = (1, 1, 1, 1)
 
@@ -38,6 +37,8 @@
 		_Width00	 ("Width", float)			= 0.1
 		_MinHeight00 ("Min Height", float)		= 0.2
 		_MaxHeight00("Max Height", float)		= 1.5
+		_TextureAtlasWidth00 ("Texture Atlas Width", int) = 1
+		_TextureAtlasHeight00("Texture Atlas Height", int) = 1
 
 		_GrassTex01	 ("Grass Texture", 2D)		= "white" {}
 		_Color01	 ("Color", Color)			= (0.5, 0.7, 0.3, 1)
@@ -48,6 +49,8 @@
 		_Width01	 ("Width", float)			= 0.1
 		_MinHeight01 ("Min Height", float)		= 0.2
 		_MaxHeight01 ("Max Height", float)		= 1.5
+		_TextureAtlasWidth01("Texture Atlas Width", int) = 1
+		_TextureAtlasHeight01("Texture Atlas Height", int) = 1
 
 		_GrassTex02	 ("Grass Texture", 2D)		= "white" {}
 		_Color02	 ("Color", Color)			= (0.5, 0.7, 0.3, 1)
@@ -58,6 +61,8 @@
 		_Width02	 ("Width", float)			= 0.1
 		_MinHeight02 ("Min Height", float)		= 0.2
 		_MaxHeight02 ("Max Height", float)		= 1.5
+		_TextureAtlasWidth02("Texture Atlas Width", int) = 1
+		_TextureAtlasHeight02("Texture Atlas Height", int) = 1
 
 		_GrassTex03	 ("Grass Texture", 2D)		= "white" {}
 		_Color03	 ("Color", Color)			= (0.5, 0.7, 0.3, 1)
@@ -68,6 +73,8 @@
 		_Width03	 ("Width", float)			= 0.1
 		_MinHeight03 ("Min Height", float)		= 0.2
 		_MaxHeight03 ("Max Height", float)		= 1.5
+		_TextureAtlasWidth03("Texture Atlas Width", int) = 1
+		_TextureAtlasHeight03("Texture Atlas Height", int) = 1
     }
 
 	SubShader
@@ -83,6 +90,8 @@
 			Cull Off
 
 			CGPROGRAM
+			#define UNITY_PASS_FORWARDBASE
+			
 			#pragma vertex vert
 			#pragma hull hullShader
 			#pragma domain domainShader
@@ -93,17 +102,18 @@
 
 			// ================= Shader_feature block start =================
 			#pragma shader_feature SIMPLE_GRASS SIMPLE_GRASS_DENSITY ONE_GRASS_TYPE TWO_GRASS_TYPES THREE_GRASS_TYPES FOUR_GRASS_TYPES
-			#pragma shader_feature __ UNLIT_GRASS_LIGHTING PBR_GRASS_LIGHTING
+			#pragma shader_feature __ GRASS_UNLIT_LIGHTING GRASS_UNSHADED_LIGHTING GRASS_PBR_LIGHTING
 			#pragma shader_feature __ UNIFORM_DENSITY VERTEX_DENSITY
 			#pragma shader_feature __ GRASS_HEIGHT_SMOOTHING
 			#pragma shader_feature __ GRASS_WIDTH_SMOOTHING
 			#pragma shader_feature __ GRASS_OBJECT_MODE
 			#pragma shader_feature __ GRASS_TOP_VIEW_COMPENSATION
 			#pragma shader_feature __ GRASS_FOLLOW_SURFACE_NORMAL
+			#pragma shader_feature __ GRASS_USE_TEXTURE_ATLAS
+			#pragma shader_feature __ GRASS_IGNORE_GI_SPECULAR
 			#pragma multi_compile  __ GRASS_RENDERTEXTURE_DISPLACEMENT
 			// ================= Shader_feature block end  =================
-
-			#define UNITY_PASS_FORWARDBASE
+			
 			#include "UnityCG.cginc"
 			#include "Tessellation.cginc"
 			#include "UnityPBSLighting.cginc"
@@ -132,6 +142,8 @@
 			Cull Off
 
 			CGPROGRAM
+			#define UNITY_PASS_FORWARDADD
+
 			#pragma vertex vert
 			#pragma hull hullShader
 			#pragma domain domainShader
@@ -142,17 +154,18 @@
 
 			// ================= Shader_feature block start =================
 			#pragma shader_feature SIMPLE_GRASS SIMPLE_GRASS_DENSITY ONE_GRASS_TYPE TWO_GRASS_TYPES THREE_GRASS_TYPES FOUR_GRASS_TYPES
-			#pragma shader_feature __ UNLIT_GRASS_LIGHTING PBR_GRASS_LIGHTING
+			#pragma shader_feature __ GRASS_UNLIT_LIGHTING GRASS_UNSHADED_LIGHTING GRASS_PBR_LIGHTING
 			#pragma shader_feature __ UNIFORM_DENSITY VERTEX_DENSITY
 			#pragma shader_feature __ GRASS_HEIGHT_SMOOTHING
 			#pragma shader_feature __ GRASS_WIDTH_SMOOTHING
 			#pragma shader_feature __ GRASS_OBJECT_MODE
 			#pragma shader_feature __ GRASS_TOP_VIEW_COMPENSATION
 			#pragma shader_feature __ GRASS_FOLLOW_SURFACE_NORMAL
+			#pragma shader_feature __ GRASS_USE_TEXTURE_ATLAS
+			#pragma shader_feature __ GRASS_IGNORE_GI_SPECULAR
 			#pragma multi_compile  __ GRASS_RENDERTEXTURE_DISPLACEMENT
 			// ================= Shader_feature block end  =================
 
-			#define UNITY_PASS_FORWARDADD
 			#include "UnityCG.cginc"
 			#include "Tessellation.cginc"
 			#include "UnityPBSLighting.cginc"
@@ -181,6 +194,8 @@
 			Offset 1, 0
 
 			CGPROGRAM
+			#define UNITY_PASS_SHADOWCASTER
+
 			#pragma vertex vert
 			#pragma hull hullShader
 			#pragma domain domainShader
@@ -190,18 +205,18 @@
 
 			// ================= Shader_feature block start =================
 			#pragma shader_feature SIMPLE_GRASS SIMPLE_GRASS_DENSITY ONE_GRASS_TYPE TWO_GRASS_TYPES THREE_GRASS_TYPES FOUR_GRASS_TYPES
-			#pragma shader_feature __ UNLIT_GRASS_LIGHTING PBR_GRASS_LIGHTING
+			#pragma shader_feature __ GRASS_UNLIT_LIGHTING GRASS_UNSHADED_LIGHTING GRASS_PBR_LIGHTING
 			#pragma shader_feature __ UNIFORM_DENSITY VERTEX_DENSITY
 			#pragma shader_feature __ GRASS_HEIGHT_SMOOTHING
 			#pragma shader_feature __ GRASS_WIDTH_SMOOTHING
 			#pragma shader_feature __ GRASS_OBJECT_MODE
 			#pragma shader_feature __ GRASS_TOP_VIEW_COMPENSATION
 			#pragma shader_feature __ GRASS_FOLLOW_SURFACE_NORMAL
+			#pragma shader_feature __ GRASS_USE_TEXTURE_ATLAS
+			#pragma shader_feature __ GRASS_IGNORE_GI_SPECULAR
 			#pragma multi_compile  __ GRASS_RENDERTEXTURE_DISPLACEMENT
 			// ================= Shader_feature block end  =================
 
-			#define UNITY_PASS_SHADOWCASTER
-			
 			#include "UnityCG.cginc"
 			#include "Tessellation.cginc"
 			#include "Lighting.cginc"

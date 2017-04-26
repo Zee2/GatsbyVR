@@ -1,6 +1,5 @@
 ﻿using System;
 using UnityEngine;
-using System.Collections;
 
 namespace StixGames
 {
@@ -78,6 +77,21 @@ namespace StixGames
 			return null;
 		}
 
+		public static bool GetWorldToTextureSpaceMatrix(Ray ray, float offset, Collider collider, out RaycastHit hit, out Vector2 forward, out Vector2 right)
+		{
+			if (collider.Raycast(ray, out hit, Mathf.Infinity))
+			{
+				forward = GetTexCoordDifference(ray.origin, hit.textureCoord, Vector3.forward * offset, collider);
+				right = GetTexCoordDifference(ray.origin, hit.textureCoord, Vector3.right * offset, collider);
+				return true;
+			}
+
+			hit = new RaycastHit();
+			forward = Vector2.zero;
+			right = Vector2.zero;
+			return false;
+		}
+
 		private static Vector2 GetTexCoordDifference(Transform targetObject, Vector3 pos, Vector2 texCoords, Vector3 offset, float maxDistance, LayerMask layerMask)
 		{
 			Ray ray = new Ray(pos + offset, Vector3.down);
@@ -91,6 +105,26 @@ namespace StixGames
 
 			ray.direction = -ray.direction;
 			if (Physics.Raycast(ray, out hit, maxDistance, layerMask) && hit.transform == targetObject)
+			{
+				return (texCoords - hit.textureCoord) / offset.magnitude;
+			}
+
+			return Vector2.zero;
+		}
+
+		private static Vector2 GetTexCoordDifference(Vector3 pos, Vector2 texCoords, Vector3 offset, Collider collider)
+		{
+			Ray ray = new Ray(pos + offset, Vector3.down);
+			RaycastHit hit;
+
+			//Send ray in dir to check for 
+			if (collider.Raycast(ray, out hit, Mathf.Infinity))
+			{
+				return (hit.textureCoord - texCoords) / offset.magnitude;
+			}
+
+			ray.direction = -ray.direction;
+			if (collider.Raycast(ray, out hit, Mathf.Infinity))
 			{
 				return (texCoords - hit.textureCoord) / offset.magnitude;
 			}

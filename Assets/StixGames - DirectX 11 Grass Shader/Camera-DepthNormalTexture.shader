@@ -18,7 +18,11 @@ struct v2f {
 };
 v2f vert( appdata_base v ) {
     v2f o;
+#if UNITY_VERSION < 540
     o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+#else
+	o.pos = UnityObjectToClipPos(v.vertex);
+#endif
     o.nz.xyz = COMPUTE_VIEW_NORMAL;
     o.nz.w = COMPUTE_DEPTH_01;
     return o;
@@ -45,7 +49,11 @@ struct v2f {
 uniform float4 _MainTex_ST;
 v2f vert( appdata_base v ) {
     v2f o;
-    o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+#if UNITY_VERSION < 540
+	o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+#else
+	o.pos = UnityObjectToClipPos(v.vertex);
+#endif
 	o.uv = TRANSFORM_TEX(v.texcoord, _MainTex);
     o.nz.xyz = COMPUTE_VIEW_NORMAL;
     o.nz.w = COMPUTE_DEPTH_01;
@@ -81,7 +89,11 @@ v2f vert( appdata_full v ) {
     v2f o;
     TreeVertBark(v);
 	
-	o.pos = mul( UNITY_MATRIX_MVP, v.vertex );
+#if UNITY_VERSION < 540
+	o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+#else
+	o.pos = UnityObjectToClipPos(v.vertex);
+#endif
 	o.uv = v.texcoord.xy;
     o.nz.xyz = COMPUTE_VIEW_NORMAL;
     o.nz.w = COMPUTE_DEPTH_01;
@@ -112,7 +124,11 @@ v2f vert( appdata_full v ) {
     v2f o;
     TreeVertLeaf(v);
 	
-	o.pos = mul( UNITY_MATRIX_MVP, v.vertex );
+#if UNITY_VERSION < 540
+	o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+#else
+	o.pos = UnityObjectToClipPos(v.vertex);
+#endif
 	o.uv = v.texcoord.xy;
     o.nz.xyz = COMPUTE_VIEW_NORMAL;
     o.nz.w = COMPUTE_DEPTH_01;
@@ -150,7 +166,11 @@ struct appdata {
 v2f vert( appdata v ) {
 	v2f o;
 	TerrainAnimateTree(v.vertex, v.color.w);
-	o.pos = mul( UNITY_MATRIX_MVP, v.vertex );
+#if UNITY_VERSION < 540
+	o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+#else
+	o.pos = UnityObjectToClipPos(v.vertex);
+#endif
     o.nz.xyz = COMPUTE_VIEW_NORMAL;
     o.nz.w = COMPUTE_DEPTH_01;
 	return o;
@@ -186,7 +206,11 @@ struct appdata {
 v2f vert( appdata v ) {
 	v2f o;
 	TerrainAnimateTree(v.vertex, v.color.w);
-	o.pos = mul( UNITY_MATRIX_MVP, v.vertex );
+#if UNITY_VERSION < 540
+	o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+#else
+	o.pos = UnityObjectToClipPos(v.vertex);
+#endif
 	o.uv = v.texcoord.xy;
     o.nz.xyz = COMPUTE_VIEW_NORMAL;
     o.nz.w = COMPUTE_DEPTH_01;
@@ -224,7 +248,11 @@ struct appdata {
 v2f vert( appdata v ) {
 	v2f o;
 	TerrainAnimateTree(v.vertex, v.color.w);
-	o.pos = mul( UNITY_MATRIX_MVP, v.vertex );
+#if UNITY_VERSION < 540
+	o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+#else
+	o.pos = UnityObjectToClipPos(v.vertex);
+#endif
 	o.uv = v.texcoord.xy;
     o.nz.xyz = -COMPUTE_VIEW_NORMAL;
     o.nz.w = COMPUTE_DEPTH_01;
@@ -259,7 +287,11 @@ struct v2f {
 v2f vert (appdata_tree_billboard v) {
 	v2f o;
 	TerrainBillboardTree(v.vertex, v.texcoord1.xy, v.texcoord.y);
-	o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
+#if UNITY_VERSION < 540
+	o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+#else
+	o.pos = UnityObjectToClipPos(v.vertex);
+#endif
 	o.uv.x = v.texcoord.x;
 	o.uv.y = v.texcoord.y > 0;
     o.nz.xyz = float3(0,0,1);
@@ -297,7 +329,11 @@ v2f vert (appdata_full v) {
 	v2f o;
 	WavingGrassBillboardVert (v);
 	o.color = v.color;
-	o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
+#if UNITY_VERSION < 540
+	o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+#else
+	o.pos = UnityObjectToClipPos(v.vertex);
+#endif
 	o.uv = v.texcoord.xy;
     o.nz.xyz = COMPUTE_VIEW_NORMAL;
     o.nz.w = COMPUTE_DEPTH_01;
@@ -335,7 +371,11 @@ v2f vert (appdata_full v) {
 	v2f o;
 	WavingGrassVert (v);
 	o.color = v.color;
-	o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
+#if UNITY_VERSION < 540
+	o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+#else
+	o.pos = UnityObjectToClipPos(v.vertex);
+#endif
 	o.uv = v.texcoord;
     o.nz.xyz = COMPUTE_VIEW_NORMAL;
     o.nz.w = COMPUTE_DEPTH_01;
@@ -354,14 +394,11 @@ ENDCG
 }
 
 SubShader{
-	Tags{ "Queue" = "AlphaTest" "RenderType" = "StixGamesGrass" }
+	Tags{ "RenderType" = "StixGamesGrass" }
 		LOD 1000
 
 		Pass 
 		{
-			Name "FORWARD"
-			Tags {"LightMode" = "ForwardBase"}
-			ColorMask RGB
 			Cull Off
 
 			CGPROGRAM
@@ -375,17 +412,19 @@ SubShader{
 
 			// ================= Shader_feature block start =================
 			#pragma shader_feature SIMPLE_GRASS SIMPLE_GRASS_DENSITY ONE_GRASS_TYPE TWO_GRASS_TYPES THREE_GRASS_TYPES FOUR_GRASS_TYPES
-			#pragma shader_feature __ UNLIT_GRASS_LIGHTING PBR_GRASS_LIGHTING
+			#pragma shader_feature __ GRASS_UNLIT_LIGHTING GRASS_UNSHADED_LIGHTING GRASS_PBR_LIGHTING
 			#pragma shader_feature __ UNIFORM_DENSITY VERTEX_DENSITY
 			#pragma shader_feature __ GRASS_HEIGHT_SMOOTHING
 			#pragma shader_feature __ GRASS_WIDTH_SMOOTHING
 			#pragma shader_feature __ GRASS_OBJECT_MODE
 			#pragma shader_feature __ GRASS_TOP_VIEW_COMPENSATION
 			#pragma shader_feature __ GRASS_FOLLOW_SURFACE_NORMAL
+			#pragma shader_feature __ GRASS_IGNORE_GI_SPECULAR
+			#pragma shader_feature __ GRASS_TEXTURE_ATLAS
 			#pragma multi_compile  __ GRASS_RENDERTEXTURE_DISPLACEMENT
 			// ================= Shader_feature block end  =================
 
-			#define UNITY_PASS_FORWARDBASE
+			#define RENDER_NORMAL_DEPTH
 			#include "UnityCG.cginc"
 			#include "Tessellation.cginc"
 			#include "UnityPBSLighting.cginc"

@@ -213,6 +213,10 @@ Material:
         second: .200000003
       data:
         first:
+          name: _TextureCutoff
+        second: .100000001
+      data:
+        first:
           name: _WindRotation
         second: 0
       data:
@@ -237,6 +241,14 @@ Material:
         second: 1.60000002
       data:
         first:
+          name: _TextureAtlasWidth00
+        second: 1
+      data:
+        first:
+          name: _TextureAtlasHeight00
+        second: 1
+      data:
+        first:
           name: _Smoothness01
         second: .5
       data:
@@ -254,6 +266,14 @@ Material:
       data:
         first:
           name: _MaxHeight01
+        second: 1
+      data:
+        first:
+          name: _TextureAtlasWidth01
+        second: 1
+      data:
+        first:
+          name: _TextureAtlasHeight01
         second: 1
       data:
         first:
@@ -277,6 +297,14 @@ Material:
         second: 1
       data:
         first:
+          name: _TextureAtlasWidth02
+        second: 1
+      data:
+        first:
+          name: _TextureAtlasHeight02
+        second: 1
+      data:
+        first:
           name: _Smoothness03
         second: .5
       data:
@@ -294,6 +322,14 @@ Material:
       data:
         first:
           name: _MaxHeight03
+        second: 1
+      data:
+        first:
+          name: _TextureAtlasWidth03
+        second: 1
+      data:
+        first:
+          name: _TextureAtlasHeight03
         second: 1
       data:
         first:

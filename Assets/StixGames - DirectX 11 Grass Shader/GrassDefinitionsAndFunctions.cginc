@@ -6,6 +6,10 @@
 	#define SHADOWPASS
 #endif
 
+#if defined(GRASS_USE_TEXTURE_ATLAS) && !defined(SIMPLE_GRASS) && !defined(SIMPLE_GRASS_DENSITY)
+	#define GRASS_TEXTURE_ATLAS
+#endif
+
 // ================================== VARIABLES ================================
 sampler2D _ColorMap;
 fixed _EdgeLength;
@@ -54,7 +58,11 @@ float4 _GrassRenderTextureArea;
 	#define DENSITY03 density.a
 #endif
 
+#if !defined(SIMPLE_GRASS) && !defined(SIMPLE_GRASS_DENSITY)
+float _TextureCutoff;
+
 sampler2D _GrassTex00;
+#endif
 #ifndef SHADOWPASS
 fixed4 _Color00;
 fixed4 _SecColor00;
@@ -65,8 +73,12 @@ fixed _MaxHeight00;
 fixed _Softness00;
 fixed _Width00;
 fixed _MinHeight00;
+#ifdef GRASS_TEXTURE_ATLAS
+int _TextureAtlasWidth00;
+int _TextureAtlasHeight00;
+#endif
 
-#if !defined(ONE_GRASS_TYPE)
+#if !defined(SIMPLE_GRASS) && !defined(SIMPLE_GRASS_DENSITY) && !defined(ONE_GRASS_TYPE)
 sampler2D _GrassTex01;
 #ifndef SHADOWPASS
 fixed4 _Color01;
@@ -78,9 +90,13 @@ fixed _MaxHeight01;
 fixed _Softness01;
 fixed _Width01;
 fixed _MinHeight01;
+#ifdef GRASS_TEXTURE_ATLAS
+int _TextureAtlasWidth01;
+int _TextureAtlasHeight01;
+#endif
 #endif
 
-#if !defined(ONE_GRASS_TYPE) && !defined(TWO_GRASS_TYPES)
+#if !defined(SIMPLE_GRASS) && !defined(SIMPLE_GRASS_DENSITY) && !defined(ONE_GRASS_TYPE) && !defined(TWO_GRASS_TYPES)
 sampler2D _GrassTex02;
 #ifndef SHADOWPASS
 fixed4 _Color02;
@@ -92,9 +108,13 @@ fixed _MaxHeight02;
 fixed _Softness02;
 fixed _Width02;
 fixed _MinHeight02;
+#ifdef GRASS_TEXTURE_ATLAS
+int _TextureAtlasWidth02;
+int _TextureAtlasHeight02;
+#endif
 #endif
 
-#if !defined(ONE_GRASS_TYPE) && !defined(TWO_GRASS_TYPES) && !defined(THREE_GRASS_TYPES)
+#if !defined(SIMPLE_GRASS) && !defined(SIMPLE_GRASS_DENSITY) && !defined(ONE_GRASS_TYPE) && !defined(TWO_GRASS_TYPES) && !defined(THREE_GRASS_TYPES)
 sampler2D _GrassTex03;
 #ifndef SHADOWPASS
 fixed4 _Color03;
@@ -106,6 +126,10 @@ fixed _MaxHeight03;
 fixed _Softness03;
 fixed _Width03;
 fixed _MinHeight03;
+#ifdef GRASS_TEXTURE_ATLAS
+int _TextureAtlasWidth03;
+int _TextureAtlasHeight03;
+#endif
 #endif
 
 fixed _Disorder;
@@ -197,51 +221,52 @@ struct GS_OUTPUT {
 	#if !defined(SIMPLE_GRASS) && !defined(SIMPLE_GRASS_DENSITY)
 		fixed2 uv  : TEXCOORD0;
 		int texIndex : TEXCOORD1;
+
+		#ifdef GRASS_TEXTURE_ATLAS
+			int textureAtlasIndex : TEXCOORD4;
+		#endif
 	#endif
 
-	#ifndef SHADOWPASS
+	#if !defined(SHADOWPASS)
 		fixed4 color : COLOR;
 
-		fixed3 lightDir : TEXCOORD1;
-		fixed3 viewDir : TEXCOORD2;
+		fixed3 lightDir : TEXCOORD2;
+		fixed3 viewDir : TEXCOORD3;
 	#endif
 };
 
 struct FS_INPUT
 {
-	float3 worldPos : TEXCOORD8;
-
-	//This part is included for normalDepth rendering, but not shadowmap rendering
-	#if !defined(SHADOWPASS) || defined(RENDER_NORMAL_DEPTH)
-		fixed3 normal : NORMAL;
-
-		#if !defined(SIMPLE_GRASS) && !defined(SIMPLE_GRASS_DENSITY)
-			fixed2 uv : TEXCOORD1;
-			int texIndex : COLOR3;
-		#endif
-	#endif
+	float3 worldPos : TEXCOORD7;
 
 	#ifndef SHADOWPASS
 		float4  pos : SV_POSITION;
 		fixed4 color : COLOR;
 
+		fixed3 normal : NORMAL;
+
 		fixed3 reflectionNormal : NORMAL1;
 
-		fixed3  lightDir : TEXCOORD2;
-		fixed3  viewDir : TEXCOORD3;
+		fixed3  lightDir : TEXCOORD0;
+		fixed3  viewDir : TEXCOORD1;
 
 		#if UNITY_SHOULD_SAMPLE_SH
 			half3 sh : TANGENT; // SH ???
 		#endif
-		SHADOW_COORDS(5)
-		UNITY_FOG_COORDS(6)
-		float4 lmap : TEXCOORD7;
-	#elif defined(UNITY_PASS_SHADOWCASTER)
+		SHADOW_COORDS(4)
+		UNITY_FOG_COORDS(5)
+		float4 lmap : TEXCOORD6;
+	#else
 		V2F_SHADOW_CASTER;
+	#endif
+		
+	#if !defined(SIMPLE_GRASS) && !defined(SIMPLE_GRASS_DENSITY)
 		fixed2 uv : TEXCOORD2;
 		int texIndex : TEXCOORD3;
-	#else
-		
+
+		#ifdef GRASS_TEXTURE_ATLAS
+			uint textureAtlasIndex : COLOR1;
+		#endif
 	#endif
 };
 

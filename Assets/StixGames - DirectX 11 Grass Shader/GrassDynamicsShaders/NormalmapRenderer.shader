@@ -68,7 +68,11 @@ Shader "Stix Games/Grass Dynamics/Normalmap Renderer"
 			v2f vert (appdata v)
 			{
 				v2f o;
+#if UNITY_VERSION < 540
 				o.vertex = mul(UNITY_MATRIX_MVP, v.vertex);
+#else
+				o.vertex = UnityObjectToClipPos(v.vertex);
+#endif
 
 				o.pos = mul(unity_ObjectToWorld, v.vertex);
 

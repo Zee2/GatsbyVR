@@ -46,12 +46,32 @@ HS_CONSTANT_OUTPUT HSConstant(InputPatch<appdata, 3> ip, uint pid : SV_Primitive
 
 [UNITY_domain("tri")]
 [UNITY_partitioning("integer")]
-[UNITY_outputtopology("triangle_cw")]
+[UNITY_outputtopology("point")]
 [UNITY_patchconstantfunc("HSConstant")]
 [UNITY_outputcontrolpoints(3)]
-appdata hullShader( InputPatch<appdata, 3> ip, uint cpid : SV_OutputControlPointID, uint pid : SV_PrimitiveID )
+tess_appdata hullShader(InputPatch<appdata, 3> ip, uint cpid : SV_OutputControlPointID, uint pid : SV_PrimitiveID)
 {
-	return ip[cpid];
+	tess_appdata o;
+	appdata i = ip[cpid];
+	o.vertex = i.vertex;
+#ifdef VERTEX_DENSITY
+	o.color = i.color;
+#endif
+
+#ifdef GRASS_FOLLOW_SURFACE_NORMAL
+	o.normal = i.normal;
+#endif
+
+	o.uv = i.uv;
+	o.lod = i.lod;
+	o.cameraPos = i.cameraPos;
+	o.lightDir = i.lightDir;
+
+#ifdef GRASS_OBJECT_MODE
+	o.objectSpacePos = i.objectSpacePos;
+#endif
+
+	return o;
 }
 
 bool IsTessFromNextPow2(float nearVal1, float farVal, float tess)
@@ -151,9 +171,6 @@ GS_INPUT domainShader(HS_CONSTANT_OUTPUT input, float3 tLoc : SV_DomainLocation,
 		//Get the percentage to the next power of two
 		output.smoothing = IsTessFromNextPow2(tLoc.x, tLoc.z, prevTess) ? SmoothingInterpolation(randCalcPos, prevTess, realTess) : 1;
 	}
-
-	//Everything that is on the lowest tessellation level will be removed
-	output.smoothing *= prevTess > 0.5f;
 #else
 	output.smoothing = 1;
 #endif

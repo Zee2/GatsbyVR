@@ -1,4 +1,4 @@
-﻿#ifndef GRASS_FRAG
+#ifndef GRASS_FRAG
 #define GRASS_FRAG
 
 #ifdef UNITY_PASS_FORWARDBASE
@@ -24,7 +24,7 @@ fixed4 frag(FS_INPUT i) : SV_Target
 
 	fixed4 c = 0;
 
-	#if defined(UNLIT_GRASS_LIGHTING)
+	#if defined(GRASS_UNLIT_LIGHTING)
 		c = half4(o.Albedo, 1);
 	#else //Not unlit
 		UNITY_LIGHT_ATTENUATION(atten, i, worldPos);
@@ -68,27 +68,30 @@ fixed4 frag(FS_INPUT i) : SV_Target
 			giInput.probePosition[1] = unity_SpecCube1_ProbePosition;
 		#endif
 		LightingStandardSpecular_GI(o, giInput, gi);
+		
+		gi.light.color *= atten;
+		c = GrassLightingStandardSpecular(o, i.viewDir, gi);
 
-		#if defined(PBR_GRASS_LIGHTING)
-			//Fix normals for reflection, the lighting won't work, because I am faking a lot of it...
-			o.Normal = i.reflectionNormal;
+		//#if defined(GRASS_PBR_LIGHTING)
+		//	//Fix normals for reflection, the lighting won't work, because I am faking a lot of it...
+		//	o.Normal = i.reflectionNormal;
 
-			// realtime lighting: call lighting function
-			c = LightingStandardSpecular(o, i.viewDir, gi);
-		#else //Use fake lighting
-			//Taken from LightingStandardSpecular
-			half oneMinusReflectivity;
-			o.Albedo = EnergyConservationBetweenDiffuseAndSpecular(o.Albedo, o.Specular, /*out*/ oneMinusReflectivity);
+		//	// realtime lighting: call lighting function
+		//	c = LightingStandardSpecular(o, i.viewDir, gi);
+		//#else //Use fake lighting
+		//	//Taken from LightingStandardSpecular
+		//	half oneMinusReflectivity;
+		//	o.Albedo = EnergyConservationBetweenDiffuseAndSpecular(o.Albedo, o.Specular, /*out*/ oneMinusReflectivity);
 
-			// shader relies on pre-multiply alpha-blend (_SrcBlend = One, _DstBlend = OneMinusSrcAlpha)
-			// this is necessary to handle transparency in physically correct way - only diffuse component gets affected by alpha
-			half outputAlpha;
-			o.Albedo = PreMultiplyAlpha(o.Albedo, o.Alpha, oneMinusReflectivity, /*out*/ outputAlpha);
+		//	// shader relies on pre-multiply alpha-blend (_SrcBlend = One, _DstBlend = OneMinusSrcAlpha)
+		//	// this is necessary to handle transparency in physically correct way - only diffuse component gets affected by alpha
+		//	half outputAlpha;
+		//	o.Albedo = PreMultiplyAlpha(o.Albedo, o.Alpha, oneMinusReflectivity, /*out*/ outputAlpha);
 
-			c = FakeGrassLighting(o.Albedo, o.Specular, o.Smoothness, o.Normal, i.viewDir, gi.light, gi.indirect);
-			c.rgb += UNITY_BRDF_GI(o.Albedo, o.Specular, oneMinusReflectivity, o.Smoothness, o.Normal, i.viewDir, o.Occlusion, gi);
-			c.a = outputAlpha;
-		#endif
+		//	c = FakeGrassLighting(o.Albedo, o.Specular, oneMinusReflectivity, o.Smoothness, o.Normal, i.viewDir, gi.light, gi.indirect);
+		//	c.rgb += UNITY_BRDF_GI(o.Albedo, o.Specular, oneMinusReflectivity, o.Smoothness, o.Normal, i.viewDir, o.Occlusion, gi);
+		//	c.a = outputAlpha;
+		//#endif
 	#endif //End not unlit block
 
 	UNITY_APPLY_FOG(i.fogCoord, c); // apply fog
@@ -120,7 +123,7 @@ fixed4 frag(FS_INPUT i) : SV_Target
 
 	fixed4 c = 0;
 
-	#if !defined(UNLIT_GRASS_LIGHTING)
+	#if !defined(GRASS_UNLIT_LIGHTING)
 		UNITY_LIGHT_ATTENUATION(atten, i, worldPos)
 
 		// Setup lighting environment
@@ -135,25 +138,23 @@ fixed4 frag(FS_INPUT i) : SV_Target
 		#endif
 		gi.light.color *= atten;
 
-		#if defined(PBR_GRASS_LIGHTING)
-			//Fix normals for reflection, the lighting won't work, because I am faking a lot of it...
-			o.Normal = i.reflectionNormal;
+		c = GrassLightingStandardSpecular(o, i.viewDir, gi);
 
-			// realtime lighting: call lighting function
-			c = LightingStandardSpecular(o, i.viewDir, gi);
-		#else //Use fake lighting
-			//Taken from LightingStandardSpecular
-			half oneMinusReflectivity;
-			o.Albedo = EnergyConservationBetweenDiffuseAndSpecular(o.Albedo, o.Specular, /*out*/ oneMinusReflectivity);
+		//#if defined(GRASS_PBR_LIGHTING)
+		//	//Fix normals for reflection, the lighting won't work, because I am faking a lot of it...
+		//	o.Normal = i.reflectionNormal;
 
-			// shader relies on pre-multiply alpha-blend (_SrcBlend = One, _DstBlend = OneMinusSrcAlpha)
-			// this is necessary to handle transparency in physically correct way - only diffuse component gets affected by alpha
-			half outputAlpha;
-			o.Albedo = PreMultiplyAlpha(o.Albedo, o.Alpha, oneMinusReflectivity, /*out*/ outputAlpha);
+		//	// realtime lighting: call lighting function
+		//	c = LightingStandardSpecular(o, i.viewDir, gi);
+		//#else //Use fake lighting
+		//	//Taken from LightingStandardSpecular
+		//	half oneMinusReflectivity;
+		//	o.Albedo = EnergyConservationBetweenDiffuseAndSpecular(o.Albedo, o.Specular, /*out*/ oneMinusReflectivity);
 
-			c = FakeGrassLighting(o.Albedo, o.Specular, o.Smoothness, o.Normal, i.viewDir, gi.light, gi.indirect);
-			c.rgb += UNITY_BRDF_GI(o.Albedo, o.Specular, oneMinusReflectivity, o.Smoothness, o.Normal, i.viewDir, o.Occlusion, gi);
-		#endif
+		//	c = FakeGrassLighting(o.Albedo, o.Specular, oneMinusReflectivity, o.Smoothness, o.Normal, i.viewDir, gi.light, gi.indirect);
+		//	c.rgb += UNITY_BRDF_GI(o.Albedo, o.Specular, oneMinusReflectivity, o.Smoothness, o.Normal, i.viewDir, o.Occlusion, gi);
+		//	c.a = 1;
+		//#endif
 	#endif
 
 	c.a = 0.0;
@@ -210,10 +211,10 @@ fixed4 frag(FS_INPUT i) : SV_Target
 	// call surface function, here it handles the cutoff
 	surf(i, o);
 
-	//Taken from COMPUTE_DEPTH_01 in UnityCG
-	float depth = -(mul(UNITY_MATRIX_V, i.worldPos).z * _ProjectionParams.w);
-
-	return EncodeDepthNormal(depth, i.normal);
+	float depth = -(mul(UNITY_MATRIX_V, float4(i.worldPos, 1)).z * _ProjectionParams.w);
+	float3 normal = i.normal;
+	normal.b = 0;
+	return EncodeDepthNormal(depth, normal);
 }
 #endif
 

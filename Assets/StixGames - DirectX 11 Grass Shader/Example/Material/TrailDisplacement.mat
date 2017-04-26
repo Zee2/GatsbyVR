@@ -37,27 +37,6 @@ Material:
           m_Offset: {x: 0, y: 0}
       data:
         first:
-          name: _BurnMap
-        second:
-          m_Texture: {fileID: 0}
-          m_Scale: {x: 1, y: 1}
-          m_Offset: {x: 0, y: 0}
-      data:
-        first:
-          name: _Normal
-        second:
-          m_Texture: {fileID: 2800000, guid: 7eec730aaf55afe4eaddd69efbbc3e21, type: 3}
-          m_Scale: {x: 1, y: 1}
-          m_Offset: {x: 0, y: 0}
-      data:
-        first:
-          name: _Alpha
-        second:
-          m_Texture: {fileID: 0}
-          m_Scale: {x: 1, y: 1}
-          m_Offset: {x: 0, y: 0}
-      data:
-        first:
           name: _ParallaxMap
         second:
           m_Texture: {fileID: 0}
@@ -98,6 +77,27 @@ Material:
           m_Texture: {fileID: 0}
           m_Scale: {x: 1, y: 1}
           m_Offset: {x: 0, y: 0}
+      data:
+        first:
+          name: _BurnMap
+        second:
+          m_Texture: {fileID: 0}
+          m_Scale: {x: 1, y: 1}
+          m_Offset: {x: 0, y: 0}
+      data:
+        first:
+          name: _Normal
+        second:
+          m_Texture: {fileID: 2800000, guid: 7eec730aaf55afe4eaddd69efbbc3e21, type: 3}
+          m_Scale: {x: 1, y: 1}
+          m_Offset: {x: 0, y: 0}
+      data:
+        first:
+          name: _Alpha
+        second:
+          m_Texture: {fileID: 0}
+          m_Scale: {x: 1, y: 1}
+          m_Offset: {x: 0, y: 0}
     m_Floats:
       data:
         first:
@@ -111,18 +111,6 @@ Material:
         first:
           name: _DstBlend
         second: 0
-      data:
-        first:
-          name: _InfluenceStrength
-        second: 10
-      data:
-        first:
-          name: _BurnStrength
-        second: 0
-      data:
-        first:
-          name: _Cutout
-        second: .361999989
       data:
         first:
           name: _Parallax
@@ -163,6 +151,18 @@ Material:
         first:
           name: _Metallic
         second: 0
+      data:
+        first:
+          name: _InfluenceStrength
+        second: 10
+      data:
+        first:
+          name: _BurnStrength
+        second: 0
+      data:
+        first:
+          name: _Cutout
+        second: .361999989
     m_Colors:
       data:
         first:

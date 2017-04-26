@@ -1,4 +1,4 @@
-﻿#ifndef GRASS_CONFIG
+#ifndef GRASS_CONFIG
 #define GRASS_CONFIG
 
 // ===================== Shader Defines =====================
