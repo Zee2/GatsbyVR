@@ -57,7 +57,7 @@
 
 
 				//All calculations are in object space
-				for (int i = 0; i < 4; i++) {
+				for (int i = 0; i < 1; i++) {
 					half3 toLight = unity_LightPosition[i].xyz - viewpos.xyz * unity_LightPosition[i].w;
 					half lengthSq = dot(toLight, toLight);
 					half atten = 1.0 / (1.0 + lengthSq * unity_LightAtten[i].z);
@@ -66,7 +66,7 @@
 
 					lightDirObj = normalize(lightDirObj);
 
-					fixed diff = max(0, dot(v.normal, lightDirObj));
+					//fixed diff = max(0, dot(v.normal, lightDirObj));
 					o.diff = 0.00;
 					o.diff += unity_LightColor[i].rgb * atten;
 				}
@@ -81,7 +81,7 @@
 				fixed4 c;
 				fixed4 col = tex2D(_MainTex, i.uv_MainTex);
 				//clip(col.a - 0.2f);
-				c.rgb = col.rgb * i.diff;
+				c.rgb = col.rgb * (i.diff*0.1);
 				clip(col.a - 0.2f);
 				// apply fog
 				return c;
